@@ -4,6 +4,7 @@
 * 支持批量添加
 * 支持多行水印的添加
 * 可定制的水印的字体、颜色和大小
+* 文字自适应图片分辨率大小
 
 ##  使用
 批量为一个文件夹中所有图片添加水印
@@ -19,7 +20,7 @@ add_watermark("input.jpg","output.jpg",["测试水印"])
 ```python
 config = {
     "font": 'C:/windows/fonts/simsun.ttc', # 字体位置
-    'font-size': 50, # 水印大小
+    'text-width': 0.8, # 文字占图片的宽度
     'rgba': (0, 0, 255, 100), # rgba
     'allow_ext': ['png', 'jpg', 'jpeg'] # 允许的后缀
 }

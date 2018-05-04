@@ -1,16 +1,15 @@
 from PIL import Image, ImageDraw, ImageFont
-import os
+import os,math
 
 config = {
     "font": 'C:/windows/fonts/simsun.ttc',
-    'font-size': 50,
     'rgba': (0, 0, 255, 100),
-    'allow_ext': ['png', 'jpg', 'jpeg']
+    'allow_ext': ['png', 'jpg', 'jpeg'],
+    'text-width': 0.8, # 文字占图片的宽度
 }
 
 
 def batch_add_waterwalk(input_dir, output_dir, watermarks):
-
     for root, dirs, files in os.walk(input_dir):
         for file in files:
             if extension_of(file) in config['allow_ext']:
@@ -21,23 +20,35 @@ def batch_add_waterwalk(input_dir, output_dir, watermarks):
                 input_path = os.path.join(root, file)
                 out_path = os.path.join(out_root, file)
                 add_watermark(input_path, out_path, watermarks)
-                
 
 
 def add_watermark(image_path, out_path, watermarks):
     base_img = Image.open(image_path).convert('RGBA')
     txt_img = Image.new('RGBA', base_img.size, (255, 255, 255, 0))
     drawer = ImageDraw.Draw(txt_img)
-    text_font = ImageFont.truetype(config["font"], size=config["font-size"])
-    pos = calc_position(drawer, text_font, base_img.size, watermarks)
+
+    font = calc_font(drawer, base_img.size[0], watermarks)
+
+    pos = calc_position(drawer, font, base_img.size, watermarks)
 
     for index, xy in enumerate(pos):
         drawer.text(
-            xy=xy, text=watermarks[index], font=text_font, fill=config['rgba'])
+            xy=xy, text=watermarks[index], font=font, fill=config['rgba'])
 
     out = Image.alpha_composite(base_img, txt_img)
     out.save(out_path, "jpeg")
     print("success! add watermark to ", image_path)
+
+
+# 根据图片大小计算字体的大小
+def calc_font(drawer, image_width, watermarks):
+    text_font = ImageFont.truetype(config["font"], size=50)
+    max_width = 0
+    for item in watermarks:
+        w, _ = (drawer.textsize(item, font=text_font))
+        max_width = max(max_width, w)
+    font_size = math.floor(image_width * config['text-width'] * 50 / (max_width))
+    return ImageFont.truetype(config["font"], size=font_size)
 
 
 # 计算水印所在的位置
